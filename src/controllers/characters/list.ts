@@ -10,7 +10,8 @@ export const listCharacters = ControllerBase(
 
     const { payload: character, errorMessage } = await new CharacterGraphqlRepository().getCharacters({
       limit: limit ? Number(limit) : undefined,
-      page: page ? Number(page) : undefined
+      page: page ? Number(page) : undefined,
+      name: search ? search.toString() : undefined
     })
 
     if (!character) return ERROR_SERVER(500, errorMessage as string)

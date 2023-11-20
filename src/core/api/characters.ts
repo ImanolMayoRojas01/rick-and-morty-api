@@ -8,7 +8,10 @@ import fetch from 'node-fetch'
 export class CharacterGraphqlRepository implements CharacterRepository {
   async getCharacters(params: GetCharactersParams): Promise<QueryResponseType<GetCharactersPayload>> {
     try {
-      const {data} = await API.get(`/character/?page=${params.page}`)
+      let search = ''
+      if (params.name) search = `&name=${params.name}`
+      
+      const {data} = await API.get(`/character/?page=${params.page}${search}`)
 
       return {
         payload: {
