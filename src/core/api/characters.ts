@@ -1,26 +1,43 @@
 import { API } from "../../config/axios";
 import { QueryResponseType } from "../types/app/app.types";
-import { CharacterEntity } from "../types/database/character/models";
 import { CharacterRepository, GetCharactersParams, GetCharactersPayload } from "../types/database/character/repository";
-import { ApolloServer, gql } from 'apollo-server-express'
-import fetch from 'node-fetch'
 
 export class CharacterGraphqlRepository implements CharacterRepository {
   async getCharacters(params: GetCharactersParams): Promise<QueryResponseType<GetCharactersPayload>> {
     try {
       let search = ''
-      if (params.name) search = `&name=${params.name}`
-      
-      const {data} = await API.get(`/character/?page=${params.page}${search}`)
+      let page = ''
+
+      if (params.name) search = `name:"${params.name}"`
+      if (params.page) page = `page:${params.page}`
+
+      const { data } = await API.post(`/`, {
+        query: `{
+          characters(${page}, filter: { ${search} }) {
+            info {
+              count
+              pages
+            }
+            results {
+              name
+              image
+              species
+              gender
+            }
+          }
+        }`
+      })
+
+      const response = data.data
 
       return {
         payload: {
-          total: data.info.count,
-          countPages: data.info.pages,
+          total: response.characters.info.count,
+          countPages: response.characters.info.pages,
           currentPage: params.page || 0,
           // next: data.info.next,
           // prev: data.info.prev,
-          characters: data.results
+          characters: response.characters.results
         }
       }
     } catch (error: any) {
